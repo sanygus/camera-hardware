@@ -9,6 +9,9 @@ boolean nextmy1 = false;
 boolean nextmy2 = false;
 boolean sleepConfirm = false;
 byte resp = 0;
+int tamp[25];
+int ci = 0;
+int amp = 0;
 byte sleep1 = 0;
 byte sleep2 = 0;
 
@@ -22,19 +25,30 @@ void setup(){
 }
 
 void loop(){
-  delay(1000);
-  if(softOff>0){
-    softOff--;
-  } else {
-    if(sleepTime>0){
-      digitalWrite(13, false);
-      digitalWrite(12, false);
-      sleepTime--;
-    }else{
-      digitalWrite(13, true);
-      digitalWrite(12, true);
+  delay(40);
+  tamp[ci] = analogRead(1);
+  if(ci >= 24) {
+    if(softOff>0){
+      softOff--;
+    } else {
+      if(sleepTime>0){
+        digitalWrite(13, false);
+        digitalWrite(12, false);
+        sleepTime--;
+      }else{
+        digitalWrite(13, true);
+        digitalWrite(12, true);
+      }
     }
+    amp = 0;
+    for (int i = 0; i <= 24; i++) {
+       amp += tamp[i];
+    }
+    amp = amp / 25;
+    ci = -1;
+    //Serial.println(amp);
   }
+  ci++;
 }
 
 void rec(int bc){
@@ -48,11 +62,10 @@ void rec(int bc){
     if(nextmy2){
       sleep2 = t;
       nextmy2 = false;
-      //if(((sleep1 * 250 + sleep2) > 0)&&(sleepTime == 0)&&(softOff == 0)) {sleepTime = sleep1 * 250 + sleep2;softOff=20;}
     }else{
       switch(t){
         case 251: resp = analogRead(0) / 4;break;
-        case 252: resp = analogRead(1) - 499;break;
+        case 252: resp = amp - 508;break;
         case 253: nextmy1 = true;break;
         case 254: nextmy2 = true;break;
         case 255: sleepConfirm = true;break;
@@ -68,6 +81,6 @@ void rec(int bc){
 
 void req(){
   Wire.write(resp);
-  Serial.println(resp);
+  Serial.println(resp);//required, it's a current magic
   resp = 0;
 }
